@@ -12,17 +12,17 @@ function [best_distance,best_route] = tabu_search_sa(inputcities, stop_temperatu
 % initial tabu list and tabu counter
 global tabulist;
 global tabu_counter;
-tabulist =  zeros(100, 2);
+tabulist =  zeros(2000, 2);
 tabu_counter  = 1;
 
 num_cities = length(inputcities);
 terminate = false
 % initial temp and ra=te, linear cool
 temperature = 1000;
-cooling_rate = 0.003;
+cooling_rate =  0.995;
 % intial route
 
-old_route = randperm(num_cities - 1);
+old_route = randperm(num_cities);
 cities = inputcities(:, old_route);
 old_distance = geographical_distance(cities);
 
@@ -31,7 +31,7 @@ best_distance = old_distance;
 results(1) = old_distance;
 iteration_count = 1;
 
-while temperature > stop_temperature && best_distance > 7013 && ~terminate
+while temperature > stop_temperature && best_distance >= 7016 && ~terminate
     [new_route, swapi, swapj] = tabu_two_opt(old_route, tabulist);
     cities = inputcities(:, new_route);
     new_distance = geographical_distance(cities);
@@ -44,7 +44,7 @@ while temperature > stop_temperature && best_distance > 7013 && ~terminate
     tabulist(tabu_counter, 1) = swapi;
     tabulist(tabu_counter, 2) = swapj;
 
-    if tabu_counter == 100
+    if tabu_counter == 2000
         tabu_counter = 1
     else
         tabu_counter = tabu_counter + 1;
@@ -59,7 +59,7 @@ while temperature > stop_temperature && best_distance > 7013 && ~terminate
     end
     
     %cool down
-    temperature = temperature - (temperature*cooling_rate);
+    temperature = temperature*cooling_rate;
     
     iteration_count = iteration_count + 1;
     results(iteration_count) = old_distance;

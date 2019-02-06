@@ -10,10 +10,10 @@ num_cities = length(inputcities);
 terminate = false
 % initial temp and ra=te, linear cool
 temperature = 1000;
-cooling_rate = 0.003;
+cooling_rate = 0.995;
 % intial route
 
-old_route = randperm(num_cities - 1);
+old_route = randperm(num_cities);
 cities = inputcities(:, old_route);
 old_distance = geographical_distance(cities);
 
@@ -40,7 +40,7 @@ while temperature > stop_temperature && best_distance > 7013 & ~terminate
     end
     
     %cool down
-    temperature = temperature - (temperature*cooling_rate);
+    temperature = temperature*cooling_rate;
     
     iteration_count = iteration_count + 1;
     results(iteration_count) = old_distance;
