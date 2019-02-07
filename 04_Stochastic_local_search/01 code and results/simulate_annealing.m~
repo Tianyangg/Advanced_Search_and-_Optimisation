@@ -10,7 +10,7 @@ num_cities = length(inputcities);
 terminate = false
 % initial temp and ra=te, linear cool
 temperature = 1000;
-cooling_rate = 0.993;
+cooling_rate = 0.999;
 % intial route
 
 old_route = randperm(num_cities);
@@ -22,7 +22,7 @@ best_distance = old_distance;
 results(1) = old_distance;
 iteration_count = 1;
 
-while temperature > stop_temperature && best_distance > 7016 && ~terminate
+while temperature > stop_temperature && best_distance > 7013 & ~terminate
     new_route = two_opt(old_route);
     cities = inputcities(:, new_route);
     new_distance = geographical_distance(cities);
@@ -46,7 +46,7 @@ while temperature > stop_temperature && best_distance > 7016 && ~terminate
     results(iteration_count) = old_distance;
     % plot solution
     plot(results(1:iteration_count),'r--');xlabel('iteration'); ylabel('f(x)');
-    text(0.3,0.95,['Best = ', num2str(best_distance), '   temperature = ', num2str(temperature)],'Units','normalized');
+    text(0.5,0.95,['Best = ', num2str(best_distance), ],'Units','normalized');
     drawnow;
 end
 
