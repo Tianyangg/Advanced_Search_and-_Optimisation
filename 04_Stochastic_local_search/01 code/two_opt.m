@@ -3,7 +3,7 @@ function newroute = two_opt(route)
 % step 0: genertate two random numbers 2 to length not the same
 i = 0;
 j = 0;
-numcities = length(route - 1);
+numcities = length(route);
 while i == j
     temp = randi([2, numcities], 1, 2);
     i = temp(1);
