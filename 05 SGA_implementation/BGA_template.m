@@ -8,12 +8,12 @@ num_bit = 4;
 % Parameters
 crossover_prob = 0.85;
 mutation_prob = 1/num_bit;
-num_ind = 5;
-max_iter = 100;
+num_ind = 7;
+max_iter = 10000;
 num_parents = floor(num_ind * 0.3);
 
 % Generate initial solution
- 
+pop = randi([0 1], num_ind , num_bit);
 
 % Calculate fitness for the initial population
 fitness = [];
@@ -33,34 +33,44 @@ while termination_flag == false
     
     %  Select parents from the population based on their fitness using truncation selection   
     parents = pop(1:num_parents,:);
-    offerspring = parents;
+    %offerspring = parents;
     
     
     
     %% apply crossover    
-    for j=1:floor(num_parents/2)
-        if rand(1) <  crossover_prob
-            % Randomly select two individuals from parents
-            
-            % Randomly select a bit as cross point
-             
-            % Swap the bits beyond the cross point
- 
-        end
+    for j=1:floor(num_parents/2)      
+        % Randomly select two individuals from parents
+        size_parents = size(parents);
+        ind_index = randsample(size_parents(1), 2);
+        individuals = parents(ind_index, :);
+        % Randomly select a bit as cross point
+        cross_point = randi([1 num_bit - 1],1);
+        % Swap the bits beyond the cross point
+        temp1 = individuals(1,:);
+        temp2 = individuals(2,:);
+        
+        offspring(1, 1:cross_point) = temp1(1:cross_point);
+        offspring(1, cross_point+1: num_bit) = temp2(cross_point+1:num_bit);
+        offspring(2, 1:cross_point) = temp2(1:cross_point);
+        offspring(2, cross_point+1: num_bit) = temp1(cross_point+1:num_bit);
+%        offspring(1) = [temp1(:,[1:cross_point]), temp2(:, [cross_point+1:num_bit])];
+%        offspring(2) = [temp2(:,[1:cross_point]), temp1(:, [cross_point+1:num_bit])];
     end
     
     %% apply mutation.  
-    for j=1:num_parents   
-         % Select the bits for mutation
- 
-         % flip it
- 
+    if rand(1) <  crossover_prob
+        for j=1:num_parents   
+             % Select the bits for mutation
+             bit_index = randi([1 4]);
+             % flip it
+             offspring(:,bit_index) = ~ offspring(:, bit_index);
+
         end
     end
     
     % Evaluation fitness of the new population (old population + new offspring)
     % Note: my implementation is not efficient
-    temp_pop = [pop; offerspring];   
+    temp_pop = [pop; offspring];   
     fitness = cal_fitness(temp_pop);
     
     % Sort the individuals in the population according to their fitness values
@@ -75,40 +85,13 @@ while termination_flag == false
         termination_flag = true;
     end
     
-    
-    
-end
+end    
+   
 best_solution = pop(1, :);
 [fitness, total_profit, total_cons_vio]  = cal_fitness(pop);
 end
 
 
-function [fitness, total_profit, total_cons_vio]  = cal_fitness(pop)
-profits = [0.2 0.3 0.5 0.1];
-project_year_budets = [
-    .5  .3  .2;
-    1   .8  .2;
-    1.5 1.5 .3;
-    0.1 0.4 .1];
-max_budgets = [3.1 2.5 0.4];
-
-num_ind = length(pop);
-total_profit = zeros(num_ind,1);
-total_bugets = zeros(num_ind,3);
-for i=1:num_ind
-    solution = pop(i,:);
-    total_profit(i,1) = solution * profits';
-    total_bugets(i,:) = solution*project_year_budets;    
-end
-
-% We use a simple penalty function, i.e., penalise those 
-% solutions that are infeasible (exceeded the budget)
-% First find out which solutions are not feasible
-contraint_violations = repmat(max_budgets,num_ind, 1) - total_bugets;
-total_cons_vio = sum(contraint_violations<0, 2);
-% Then penalise those solutions by reducing the fitness
-fitness = total_profit -  total_cons_vio;
-end
 
 
 
