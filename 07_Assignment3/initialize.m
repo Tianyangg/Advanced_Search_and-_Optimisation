@@ -17,13 +17,13 @@ for j = 1:cols
     beta{j} = find(A(:,j)==1);
 end
 %[beta, alpha] = find(A==1);
-% initialize S_k
-% initialize S cell array
+% initialize S1_k
+% initialize S1 cell array
 I = [1:rows];
-S = {};
+S1 = {};
 
 for k = 1:num_pop
-    S_k = [];
+    S1_k = [];
     U = I;
     while ~isempty(U)
         % randomly select a row
@@ -33,20 +33,34 @@ for k = 1:num_pop
         while (1)
             j = datasample(temp, 1);
             if isempty(intersect(beta{j}, setdiff(I, U)))
-                S_k = [S_k, j];
-                U = setdiff(U, intersect(i, beta{j}));
+                S1_k = [S1_k, j];
+                intersect(i, beta{j});
+                %U = setdiff(U, intersect(i, beta{j}));
+                U = setdiff(U, beta{j});
                 break;
             end
             
             temp = setdiff(temp, j);
             if isempty(temp)
                 U = setdiff(U, intersect(i, beta{j}));
+                %U = setdiff(U, beta{j});
                 break;
             end
         end
-    S{k} = S_k;
+    S1{k} = S1_k;
     end
+    
+end
+
+% binary representation
+
+%initilize the matrix S (#poplation,#roundtrip)
+S = zeros(num_pop, cols);
+for i = 1:length(S1)
+    % access the element
+    S(i,S1{i}) = 1 ;
     
 end
 end
 
+% test the difference of using intersect 
