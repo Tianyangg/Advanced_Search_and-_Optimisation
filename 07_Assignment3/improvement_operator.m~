@@ -13,10 +13,16 @@ for j = 1:cols
     beta{j} = find(A(:,j)==1);
 end
 
-w_i = size(intersect(alpha{i}, S))
+for i = 1:rows
+w(i) = size(intersect(alpha{i}, S))
+end
 T = S;
-
 % Drop procecure
+while ~isempty(T)
+    j = datasample(T, 1);
+    T = setdiff(T, j);
+    if w(i)
+end
 
 end
 
