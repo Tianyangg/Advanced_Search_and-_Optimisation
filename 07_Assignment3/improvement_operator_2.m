@@ -1,4 +1,4 @@
-function S2 = improvement_operator(S1, A, cost_col)
+function S2 = improvement_operator_2(S1, A, cost_col)
 % improvement
 % S1: binary strings
 % S set of columns in a solution
@@ -20,7 +20,7 @@ for i = 1:rows
     w(i) = length(intersect(alpha{i}, S));
 end
 
-I = [1:rows];
+%I = [1:rows];
 %w(I) = size(intersect(alpha{I}, S));
 T = S;
 %disp(w);
@@ -46,17 +46,18 @@ V = U;
 while ~isempty(V)
     i = datasample(V, 1);
     V = setdiff(V, i);
-    
+    j2 = [];
     for search = 1:length(alpha{i})
         j = alpha{i}(search);
         %zhen zi ji
-        j2 = [];
+        %j2 = [];
         %if (isempty(setdiff(beta{j}, U))) 
         if all(ismember(beta{j}, U))==1
         %if ~isempty(intersect(beta{j}, U))
+            %j2(end) = j
             j2 = [j2, j];            
         end
-       
+       % disp(j2);
     end
    
     % now you have all the js that satisfy the condition,

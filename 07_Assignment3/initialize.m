@@ -21,11 +21,15 @@ end
 % initialize S1 cell array
 I = [1:rows];
 S1 = {};
-
-for k = 1:num_pop
-    S1_k = [];
-    U = I;
-    while ~isempty(U)
+% 
+S = zeros(num_pop, cols);
+%S = zeros(1, cols);
+for k = 1:num_pop 
+    % to avoid generating same solutions
+    while(1)
+        S1_k = [];
+        U = I;
+        while ~isempty(U)
         % randomly select a row
         i = datasample(U, 1);
         % select j
@@ -42,25 +46,56 @@ for k = 1:num_pop
             
             temp = setdiff(temp, j);
             if isempty(temp)
-                U = setdiff(U, intersect(i, beta{j}));
-                %U = setdiff(U, beta{j});
+                %U = setdiff(U, intersect(i, beta{j}));
+                U = setdiff(U, beta{j});
                 break;
             end
         end
-    S1{k} = S1_k;
+        
+        %S1{k} = S1_k;
+        end
+        
+        binary_temp = zeros(1, cols); % used to store this iteraton result
+        binary_temp(S1_k) = 1;
+        if ~ismember(binary_temp, S, 'rows')
+           %$ind = size(S, 1)     
+            S(k,:) = binary_temp;
+            break;
+        end        
     end
-    
+            
 end
 
 % binary representation
-
 %initilize the matrix S (#poplation,#roundtrip)
-S = zeros(num_pop, cols);
-for i = 1:length(S1)
-    % access the element
-    S(i,S1{i}) = 1 ;
-    
+%S = zeros(num_pop, cols);
+% for i = 1:length(S1)
+%     % access the element
+%     S(i,S1{i}) = 1 ;    
+% end
+% 
 end
-end
-
-% test the difference of using intersect 
+%     while ~isempty(U)
+%         % randomly select a row
+%         i = datasample(U, 1);
+%         % select j
+%         temp=alpha{i};
+%         while (1)
+%             j = datasample(temp, 1);
+%             if isempty(intersect(beta{j}, setdiff(I, U)))
+%                 S1_k = [S1_k, j];
+%                 intersect(i, beta{j});
+%                 %U = setdiff(U, intersect(i, beta{j}));
+%                 U = setdiff(U, beta{j});
+%                 break;
+%             end
+%             
+%             temp = setdiff(temp, j);
+%             if isempty(temp)
+%                 U = setdiff(U, intersect(i, beta{j}));
+%                 %U = setdiff(U, beta{j});
+%                 break;
+%             end
+%         end
+%     S1{k} = S1_k;
+%     end

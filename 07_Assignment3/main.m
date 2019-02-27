@@ -16,6 +16,7 @@ for i = 1: 10
     new_generation = [p2; offspring];
     ranked = Stochatic_ranking(0.5, rows, cols, new_generation, matrix_a, column_cost);
     p2 = ranked(1:pop_size,:);
+    best(i) = findmin(p2, matrix_a, column_cost)
 end
 
 
