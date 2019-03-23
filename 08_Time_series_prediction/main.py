@@ -11,8 +11,9 @@ import csv
 def niso_lab3(question, n, x, expr):
     if question == 1:
         xnew = [float(i) for i in x.split()]
+        #print(len(xnew))
         if n != len(xnew):
-            print('invalid input')
+            #print('invalid input')
             return 0
         f.num = xnew
 
@@ -24,14 +25,15 @@ def niso_lab3(question, n, x, expr):
 # data: path to the text file
 # n is the dimension of the input vector
 def readdata(filepath, n):
-    with open(filepath, 'r') as f:
-        X_data = [row[0:n] for row in csv.reader(f, delimiter='\t')]
-        Y_data = [row[n+1] for row in csv.reader(f, delimiter='\t')]
+    with open(filepath, 'r') as f1:
+        X_data = [row[0:n] for row in csv.reader(f1, delimiter='\t')]
+    with open(filepath, 'r') as f2:
+        Y_data = [row[n] for row in csv.reader(f2, delimiter='\t')]
+
     return X_data, Y_data
 
 
-d = 'small_housing.txt'
-readdata(d, 8)
+
 
 #print(niso_lab3(1, 4, '1.0 2.0 3.0 5.0', '(exp (data 2))'))
 #print(parse_ev("(mul (mul (data 2) (log 8)) (log 8))"))

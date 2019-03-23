@@ -14,7 +14,11 @@ def parse_ev(s):
     return evaluate(l)
 
 def evaluate(l):
-    ## print(l)
+    #print(l)
+    if value_type(l):
+        return l
+    if not isinstance(l, list):
+        print(l)
     if l[0] == Symbol('add'):
         return add(l[1], l[2])
 
@@ -25,18 +29,22 @@ def evaluate(l):
         return mul(l[1], l[2])
 
     if l[0] == Symbol('div'):
+        #print('div', div(l[1], l[2]))
         return div(l[1], l[2])
 
     if l[0] == Symbol('pow'):
+        #print('pow', power(l[1], l[2]))
         return power(l[1], l[2])
 
     if l[0] == Symbol('sqrt'):
         return mysq(l[1])
 
     if l[0] == Symbol('log'):
+        #print('log', logarithm(l[1]))
         return logarithm(l[1])
 
     if l[0] == Symbol('exp'):
+        #print('exp', myexp(l[1]))
         return myexp(l[1])
 
     if l[0] == Symbol('max'):
@@ -55,7 +63,6 @@ def evaluate(l):
         return avg(l[1], l[2])
 
 
-
 def mymax(a, b):
     if value_type(a) and value_type(b):
         return max(a, b)
@@ -68,47 +75,118 @@ def mymax(a, b):
 
 def myexp(a):
     if value_type(a):
-        return math.exp(a)
+        try:
+            return  math.exp(a)
+        except OverflowError:
+            return  float(0)
+        #return math.exp(a)
     else:
-        return myexp(evaluate(a))
+        try:
+            return myexp(evaluate(a))
+        except OverflowError:
+            return  float(0)
+
 
 def logarithm(a):
     if value_type(a):
         #print(a)
-        r = math.log(a, 2)
-        return r
+        if a > 0:
+            r = math.log(a, 2)
+            return r
+        else:
+            return 0
     else:
-        r = evaluate(a, 2)
+        r = evaluate(a)
         return r
 
 def mysq(a):
     if value_type(a):
-        r = math.sqrt(a)
-        return r
+        if a > 0:
+            try:
+                r = math.sqrt(a)
+                return r
+            except ValueError or OverflowError:
+                return 0
+        else:
+            return 0
     else:
-        r = evaluate(a)
+        r = mysq(evaluate(a))
         return r
 
 def power(a, b):
     if value_type(a) and value_type(b):
-        return a ** b
+        #return a ** b
+        if a == 0:
+            return 0
+        else:
+            try:
+                re = a ** b
+                if not isinstance(re, complex):
+                    return re
+                else:
+                    return 0
+            except OverflowError or ValueError:
+                return 0
+            except ValueError:
+                return 0
     if not value_type(a) and value_type(b):
         r = evaluate(a)
-        return r ** b
+        if r == 0:
+            return 0
+        else:
+            try:
+                re = r ** b
+                if not isinstance(re, complex):
+                    return re
+                else:
+                    return 0
+            except OverflowError or ValueError:
+                return 0
+            except ValueError:
+                return 0
     if value_type(a) and not value_type(b):
         r = evaluate(b)
-        return  a ** r
+        if a == 0:
+            return 0
+        else:
+            try:
+                re = a ** r
+                if not isinstance(re, complex):
+                    return re
+                else:
+                    return 0
+            except OverflowError or ValueError:
+                return 0
+            except ValueError:
+                return 0
+
     else:
         r1 = evaluate(a)
         r2 = evaluate(b)
-        return r1 ** r2
+        if r1 == 0:
+            return 0
+        else:
+            try:
+                re = r1 ** r2
+                if not isinstance(re, complex):
+                    return re
+                else:
+                    return 0
+                #return r1 ** r2
+            except OverflowError or ValueError:
+                return 0
+            except ValueError:
+                return 0
 
 def div(a, b):
     if value_type(a) and value_type(b):
         if b == 0:
             return 0
         else:
-            return a/b
+            try:
+                return a/b
+            except OverflowError:
+                return 0
     if not value_type(a) and value_type(b):
         if b == 0:
             return 0
@@ -123,7 +201,10 @@ def div(a, b):
 
 def sub(a, b):
     if value_type(a) and value_type(b):
-        return a - b
+        try:
+            return a - b
+        except OverflowError:
+            return 0
     if not value_type(a) and value_type(b):
         return sub(evaluate(a), b)
     if value_type(a) and not value_type(b):
@@ -133,7 +214,15 @@ def sub(a, b):
 
 def add(a, b):
     if value_type(a) and value_type(b):
-        return a + b
+        try:
+            return a + b
+        except ValueError:
+            return 0
+        except OverflowError:
+            return 0
+        except Exception as error:
+            print(error)
+            return 0
     if not value_type(a) and value_type(b):
         return add(evaluate(a), b)
     if value_type(a) and not value_type(b):
@@ -143,7 +232,10 @@ def add(a, b):
 
 def mul(a, b):
     if value_type(a) and value_type(b):
-        return a * b
+        try:
+            return a * b
+        except OverflowError:
+            return 0
     if not value_type(a) and value_type(b):
         return mul(evaluate(a), b)
     if value_type(a) and not value_type(b):
@@ -158,14 +250,20 @@ def ifleq(a, b, c, d):
         return evaluate(d)
 
 def mod(x , y): #qu yu
-    return int(divmod(x, y)[1])
+    if int(y) == 0:
+        return 0
+    else:
+        try:
+            return int(divmod(int(x), int(y))[1])
+        except OverflowError or ValueError:
+            return 0
 
 def dat(a):
     if value_type(a):
         ind = mod(a, nn)
         return num[ind]
     else:
-        return dat(evaluate(a))
+        return int(dat(evaluate(a)))
 def diff(a, b):
     if value_type(a) and value_type(b):
         return sub(dat(a), dat(b))
@@ -183,8 +281,8 @@ def avg(a, b):
         temp = math.fabs(k - l)
         small = min(k, l)
         large = max(k, l)
-        if small == large:
-            return num[dat(k)-1]
+        if temp == 0:
+            return 0
         else:
             return div(sum(num[small: large - 1]), temp)
 
@@ -202,6 +300,7 @@ def value_type(a):
         return True
     else:
         return False
+
 
 
 
