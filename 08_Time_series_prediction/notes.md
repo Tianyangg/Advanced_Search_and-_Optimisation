@@ -10,3 +10,8 @@
 ---
 * initalization: parameters: max tree depth, initial population size
 * weight the fitness based on the depth of a tree to prevent overfitting
+----
+Initializing in GP population
+> two methods, Full and growth
+
+> Growth: tree nodes are ramdomly selected from both ternimal and function sets but does not exceed the tree depth

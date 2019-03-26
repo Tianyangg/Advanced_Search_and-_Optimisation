@@ -16,9 +16,7 @@ def niso_lab3(question, n, x, expr):
             #print('invalid input')
             return 0
         f.num = xnew
-
         f.nn = n
-
         r = f.parse_ev(expr)
         return r
 
@@ -29,20 +27,7 @@ def readdata(filepath, n):
         X_data = [row[0:n] for row in csv.reader(f1, delimiter='\t')]
     with open(filepath, 'r') as f2:
         Y_data = [row[n] for row in csv.reader(f2, delimiter='\t')]
-
     return X_data, Y_data
 
 
 
-
-#print(niso_lab3(1, 4, '1.0 2.0 3.0 5.0', '(exp (data 2))'))
-#print(parse_ev("(mul (mul (data 2) (log 8)) (log 8))"))
-#print(f.parse_ev("(max (data 0) (data 1))"))
-
-
-#print(loads("1.0 2.0 3.0"))
-#print(loads("(mul (mul (data 2) (log 8)) (log 8))"))
-
-
-#if __name__ == '__main__':
-#  fire.Fire()

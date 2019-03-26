@@ -6,9 +6,10 @@ import fire
 from pathlib import Path
 import numpy as np
 import csv
-
+import numpy
 num = []
 nn = 0
+
 def parse_ev(s):
     l = loads(s)
     return evaluate(l)
@@ -78,18 +79,16 @@ def myexp(a):
         try:
             return  math.exp(a)
         except OverflowError:
-            return  float(0)
-        #return math.exp(a)
+            return  numpy.inf
     else:
         try:
             return myexp(evaluate(a))
         except OverflowError:
-            return  float(0)
+            return  0
 
 
 def logarithm(a):
     if value_type(a):
-        #print(a)
         if a > 0:
             r = math.log(a, 2)
             return r
@@ -105,8 +104,10 @@ def mysq(a):
             try:
                 r = math.sqrt(a)
                 return r
-            except ValueError or OverflowError:
+            except ValueError:
                 return 0
+            except OverflowError:
+                return numpy.inf
         else:
             return 0
     else:
@@ -254,10 +255,12 @@ def mod(x , y): #qu yu
         return 0
     else:
         try:
-            return int(divmod(int(x), int(y))[1])
+            if math.isnan(x) or math.isnan(y):
+                return 0
+            result = divmod(int(x), int(y))[1]
+            return result
         except OverflowError or ValueError:
             return 0
-
 def dat(a):
     if value_type(a):
         ind = mod(a, nn)
