@@ -8,6 +8,7 @@ RUN apt-get -y install python-sexpdata
 RUN apt-get -y install python-sklearn
 RUN apt-get -y install python-pyparsing
 RUN apt-get -y install python-argparse
+RUN apt-get -y install python-pathlib
 
 
 

@@ -3,17 +3,16 @@ import matplotlib.pyplot as plt
 import random
 import io
 import math
-#import fire
-#from pathlib import Path
+
 import numpy as np
 import csv
-#import main
+
 import sys
 import numpy
 import copy
 import argparse
 import csv
-
+import time
 
 
 
@@ -21,7 +20,7 @@ sys.setrecursionlimit(15000)
 
 # define the function dictionary:
 func = {'add', 'sub', 'mul', 'div', 'pow', 'sqrt', 'log', 'exp', 'max', 'ifleq', 'diff', 'avg', 'data'}
-terminate = {'const', 'var'}
+terminate = {'const'}
 
 num = []
 nn = 0
@@ -29,54 +28,159 @@ def parse_ev(s):
     l = loads(s)
     return evaluate(l)
 
+def value_type(a):
+    if isinstance(a, int) or isinstance(a, float):
+        return True
+    else:
+        return False
+
+
 def evaluate(l):
     #print(l)
     if value_type(l):
         return l
 
     if l[0] == Symbol('add'):
-        return add(l[1], l[2])
+        a = evaluate(l[1])
+        b = evaluate(l[2])
+        try:
+            return a + b
+        except ValueError:
+            return 0
+        except OverflowError:
+            #return sys.float_info.max
+            return 0
 
     if l[0] == Symbol('sub'):
-        return sub(l[1], l[2])
+        a = evaluate(l[1])
+        b = evaluate(l[2])
+        try:
+            return a - b
+        except ValueError:
+            return 0
+        except OverflowError:
+            return 0
 
     if l[0] == Symbol('mul'):
-        return mul(l[1], l[2])
+        a = evaluate(l[1])
+        b = evaluate(l[2])
+        try:
+            return a * b
+        except ValueError:
+            return 0
+        except OverflowError:
+            #return sys.float_info.max
+            return 0
+        #return mul(l[1], l[2])
 
     if l[0] == Symbol('div'):
-        #print('div', div(l[1], l[2]))
-        return div(l[1], l[2])
+        a = evaluate(l[1])
+        b = evaluate(l[2])
+        if b == 0:
+            return 0
+        else:
+            try:
+                return a/b
+            except ValueError:
+                return 0
+            except OverflowError:
+                #return sys.float_info.max
+                return 0
+        #return div(l[1], l[2])
 
     if l[0] == Symbol('pow'):
-        #print('pow', power(l[1], l[2]))
-        return power(l[1], l[2])
+        a = evaluate(l[1])
+        b = evaluate(l[2])
+        if a == 0 and b == 0:
+            return 1
+        else:
+            try:
+                re = math.pow(a, b)
+                if isinstance(re, complex):
+                    return 0
+                else:
+                    return re
+            except ValueError:
+                return 0
+            except OverflowError:
+                #return sys.float_info.max
+                return 0
+        #return power(l[1], l[2])
 
     if l[0] == Symbol('sqrt'):
-        return mysq(l[1])
+        try:
+            re = math.sqrt(evaluate(l[1]))
+            if isinstance(re, complex):
+                return 0
+            else:
+                return re
+        except ValueError:
+            return 0
+        except OverflowError:
+            #return sys.float_info.max
+            return 0
 
     if l[0] == Symbol('log'):
-        #print('log', logarithm(l[1]))
-        return logarithm(l[1])
+        try:
+            return math.log(evaluate(l[1]), 2)
+        except ValueError:
+            return 0
+        except OverflowError:
+            #return sys.float_info.max
+            return 0
+        #return logarithm(l[1])
 
     if l[0] == Symbol('exp'):
-        #print('exp', myexp(l[1]))
-        return myexp(l[1])
+        try:
+            return math.exp(evaluate(l[1]))
+        except ValueError:
+            return 0
+        except OverflowError:
+            #return sys.float_info.max
+            return 0
+        #return myexp(l[1])
 
     if l[0] == Symbol('max'):
-        return mymax(l[1], l[2])
+        return max(evaluate(l[1]), evaluate(l[2]))
 
     if l[0] == Symbol('data'):
-        return dat(l[1])
+        ind = int(abs(math.floor(evaluate(l[1]))) % nn)
+        return num[ind]
 
     if l[0] == Symbol('ifleq'):
-        return ifleq(l[1], l[2], l[3], l[4])
+        if evaluate(l[1]) <= evaluate(l[2]):
+            return evaluate(l[3])
+        else:
+            return evaluate(l[4])
 
     if l[0] == Symbol('diff'):
-        return diff(l[1], l[2])
+        ind1 = int(abs(math.floor(evaluate(l[1]))) % nn)
+        ind2 = int(abs(math.floor(evaluate(l[2]))) % nn)
+        try:
+            return num[ind1] - num[ind2]
+        except ValueError:
+            return 0
+        except OverflowError:
+            #return sys.float_info.max
+            return 0
+        #return diff(l[1], l[2])
 
     if l[0] == Symbol('avg'):
-        return avg(l[1], l[2])
-
+        a = evaluate(l[1])
+        b = evaluate(l[2])
+        k = int(math.floor(abs(math.floor(a)) % nn))
+        l = int(math.floor(abs(math.floor(b)) % nn))
+        if k == l:
+            return 0
+        small = min(k, l)
+        large = max(k, l)
+        try:
+            return sum(num[small: large])/math.fabs(k - l)
+        except ValueError:
+            return 0
+        except OverflowError:
+            #return sys.float_info.max
+            return 0
 
 def mymax(a, b):
     if value_type(a) and value_type(b):
@@ -284,7 +388,6 @@ def dat(a):
         return num[ind]
     else:
         return int(dat(evaluate(a)))
-
 def diff(a, b):
     if value_type(a) and value_type(b):
         return sub(dat(a), dat(b))
@@ -294,7 +397,6 @@ def diff(a, b):
         return diff(a, evaluate(b))
     else:
         return diff(evaluate(a),  evaluate(b))
-
 def avg(a, b):
     if value_type(a) and value_type(b):
         k = math.floor(abs(math.floor(a)) % nn)
@@ -302,6 +404,9 @@ def avg(a, b):
         temp = math.fabs(k - l)
         small = min(k, l)
         large = max(k, l)
+        if not isinstance(small, int) or not isinstance(large, int):
+            #print('test words')
+            return 0
         if temp == 0:
             return 0
         else:
@@ -311,6 +416,7 @@ def avg(a, b):
             except ValueError:
                 return 0
             except OverflowError:
+                #return 0
                 return sys.float_info.max
 
     if not value_type(a) and value_type(b):
@@ -319,14 +425,6 @@ def avg(a, b):
         return avg(a, evaluate(b))
     else:
         return avg(evaluate(a),  evaluate(b))
-
-
-def value_type(a):
-    if isinstance(a, int) or isinstance(a, float):
-        return True
-    else:
-        return False
-
 
 def fitness(expr, n, m, data):
     path = data
@@ -367,7 +465,8 @@ def initialization(size, maxdepth, n, m, data):
     ftemp = fitness(dumps(ind), n, m, data)
     fi = [ftemp]
     # full method
-    for i in range(1, int(2*size/3)):
+
+    for i in range(1, int(size/2)):
         individual = full(maxdepth)
         ftemp = fitness(dumps(individual), n, m, data)
         while initialization in p or not isinstance(p, list) or ftemp in fi:
@@ -376,9 +475,8 @@ def initialization(size, maxdepth, n, m, data):
         p = p + [individual]
         fi = fi + [ftemp]
 
-    #print('full method done')
-    # growth method
-    for i in range(int(2*size/3) + 1, size):
+
+    for i in range(1, int(size/2)):
         individual = grow(maxdepth)
         ftemp = fitness(dumps(individual),n, m, data)
         while initialization in p or not isinstance(p, list) or ftemp in fi:
@@ -386,7 +484,8 @@ def initialization(size, maxdepth, n, m, data):
             ftemp = fitness(dumps(individual), n, m, data)
         p = p + [individual]
         fi = fi + [ftemp]
-    #print('all done')
+
+
 
     return p, fi
 
@@ -397,7 +496,7 @@ def full(maxdepth):
         if leaf == 'var':
             return [Symbol('data'), random.randint(0, 10)]
         else:
-            return random.randint(1, 5)
+            return random.randint(-5, 5)
     else:
         node = random.choice(tuple(func)) # randomly pick a root
         if node == 'add':
@@ -429,7 +528,7 @@ def full(maxdepth):
 
 def grow(maxdepth):
     rand = random.uniform(0, 1)
-    if rand <= 0.3 or maxdepth == 0:
+    if rand <= 0.4 or maxdepth == 0:
         if random.uniform(0, 1) < 0.5:
             return [Symbol('data'), random.randint(0, 3)]
         else:
@@ -470,7 +569,7 @@ def get_parents(pop, fit):
 
     tournament = []
     ftemp = []
-    for i in range(0, 4):
+    for i in range(0, 8):
         tournament.append(random.randint(0, length))
     for i in tournament:
         ftemp.append(fit[i])
@@ -565,7 +664,7 @@ def point(tree, n, index):
             return point(tree[tree_len - 1], n, index)
 
 def cross_point(tree, n, index, probability):
-    if n <= 3 or tree_depth(tree) <= 2:
+    if tree_depth(tree) < 2:
         index = index + [0]
         return tree, index
     if probability < 1/n or isinstance(tree, int) or isinstance(tree, float):
@@ -618,6 +717,8 @@ def replace(tree, subtree, r):
 def crossover(pop, f):
     pop_copy = copy.deepcopy(pop)
     p1, p2 = get_parents(pop_copy, f)
+    mutation_rate1 = random.uniform(0, 1)
+    mutation_rate2 = random.uniform(0, 1)
     p1 = mutation(p1, 0.3)
     p2 = mutation(p2, 0.3)
     offspring1 = copy.deepcopy(p1)
@@ -632,9 +733,23 @@ def crossover(pop, f):
     rand2 = random.uniform(0, 1)
     (stree2, route2) = cross_point(p2, n_p2, [], rand2)
 
-    #if isinstance(stree1, int):
-        #print('leaf selected')
+    while abs(tree_depth(stree1) - tree_depth(stree2)) > 3 or stree1 == stree2:
+        # print('roullete')
+        p1, p2 = get_parents(pop_copy, f)
+        p1 = mutation(p1, 0.3)
+        p2 = mutation(p2, 0.3)
+        offspring1 = copy.deepcopy(p1)
 
+        n_p1 = pow(number_of_nodes(p1), 1 / 1)
+        n_p2 = pow(number_of_nodes(p2), 1 / 1)
+        rand1 = random.uniform(0, 1)
+        (stree1, route1) = cross_point(p1, n_p1, [], rand1)
+        rand2 = random.uniform(0, 1)
+        (stree2, route2) = cross_point(p2, n_p2, [], rand2)
+
+    offspring1 = replace(offspring1, stree2, route1)
+    return offspring1
+'''
     while abs(tree_depth(stree1) - tree_depth(stree2)) > 3 or stree1 == stree2:
         #print('roullete')
         p1, p2 = get_parents(pop_copy, f)
@@ -648,9 +763,8 @@ def crossover(pop, f):
         (stree1, route1) = cross_point(p1, n_p1, [], rand1)
         rand2 = random.uniform(0, 1)
         (stree2, route2) = cross_point(p2, n_p2, [], rand2)
+'''
 
-    offspring1 = replace(offspring1, stree2, route1)
-    return offspring1
 
 def tree_depth(tree):
     if not tree:
@@ -674,6 +788,10 @@ def mysorting(po, fit, p):
             if fit[j] > fit[j + 1] or random.uniform(0, 1) < p:
                 fit[j], fit[j + 1] = fit[j + 1], fit[j]
                 po[j], po[j + 1] = po[j + 1], po[j]
+            #if random.uniform(0, 1) < p/10 and tree_depth(po[j]) > tree_depth(po[j+1]):
+            #    fit[j], fit[j + 1] = fit[j + 1], fit[j]
+            #    po[j], po[j + 1] = po[j + 1], po[j]
+
     return po, fit
 
 
@@ -681,12 +799,32 @@ def mutation(tree, p):
     if random.uniform(0, 1) < p:
         node_number = math.pow(number_of_nodes(tree), 1/2)
         #node_number = math.pow(2, tree_depth(tree)) - 1
-        rand1 = random.uniform(0, 1)
-        old_sub, route = cross_point(tree, node_number, [], rand1)
+        #rand1 = random.uniform(0, 1)
+        #old_sub, route = cross_point(tree, node_number, [], rand1)
+
+        routes = valid_address(tree)
+        r1 = random.choice(routes)
+        old_sub = get_subtree(tree, r1)
         # initialize a new tree
         old_depth = tree_depth(old_sub)
-        new_sub = full(old_depth)
-        tree = replace(tree, new_sub, route)
+        ctr = 0
+        while old_depth == 0 and ctr <= 10:
+            r1 = random.choice(routes)
+            old_sub = get_subtree(tree, r1)
+            # initialize a new tree
+            old_depth = tree_depth(old_sub)
+            ctr += 1
+
+        if old_depth >= 2:
+            rand_depth = random.randint(1, old_depth)
+            rand1 = random.uniform(0, 1)
+            if rand1 <= 0.5:
+                new_sub = full(rand_depth)
+            else:
+                new_sub = grow(rand_depth)
+        else:
+            new_sub = full(1)
+        tree = replace(tree, new_sub, r1)
         return tree
     else:
         return tree
@@ -704,56 +842,51 @@ def genetic(lam, n, m, data, time_buget):
     population, f= initialization(lam, 2, n, m, data)
 
     best = []
-
+    start_time = time.time()
     for g in range(1, 100):
-        #print('generation:', g)
-        #print(len(population), len(f))
-
-        p_operate = copy.deepcopy(population)
-
-        for i in range (0, 50):
-            o1 = crossover(p_operate, f)
-            #o1 = mutation(crossover(p_operate, f), 0.5)
-            f1 = fitness(dumps(o1), n, m, data)
-
-            while tree_depth(o1) > 20 or o1 in population or f1 in f:
-                #print('trapped')
-                o1 = crossover(p_operate, f)
+        end_time = time.time()
+        if (end_time - start_time) > time_buget:
+            break
+        else:
+            p_operate = copy.deepcopy(population)
+            #p_operate, f = mysorting(p_operate, f, 0.1)
+            for i in range (0, 50):
+                # o1 = crossover(p_operate, f)
+                #o1 = mutation(crossover(p_operate, f), 0.5)
+                o1, o2 = cross(p_operate, f)
                 f1 = fitness(dumps(o1), n, m, data)
-            #print('individual: ', i, 'depth: ', tree_depth(o1))
+                f2 = fitness(dumps(o2), n, m, data)
 
-            population.append(o1)
-            f.append(f1)
+                while tree_depth(o1) > 10 or o1 in population or o2 in population:
+                    o1, o2 = cross(p_operate, f)
+                    f1 = fitness(dumps(o1), n, m, data)
+                    f2 = fitness(dumps(o2), n, m, data)
+                    #print('trapped')
+                #    o1 = crossover(p_operate, f)
+                #    f1 = fitness(dumps(o1), n, m, data)
+                #print('individual: ', i, 'depth: ', tree_depth(o1))
+                population.append(o1)
+                population.append(o2)
+                f.append(f1)
+                f.append(f2)
 
-
-        #print('len ', len(f) , len(population))
-
-        new_pop, new_f = mysorting(population, f, 0.1)
-        #print(f)
-
-        population = new_pop[0:lam]
-        f = new_f[0:lam]
-
-        print('most fit rmse: ', fitness(dumps(population[0]), 5, 100, 'test5.txt'))
-        print('most fit rmse: ', fitness(dumps(population[1]), 5, 100, 'test5.txt'))
-        print('most fit rmse: ', fitness(dumps(population[2]), 5, 100, 'test5.txt'))
-        best = best + [f[0]]
-
+            new_pop, new_f = mysorting(population, f, 0.1)
+            population = new_pop[0:lam]
+            f = new_f[0:lam]
+            print('generation:', g, 'fitness: ', f[0:10])
+            #print('generation: ', g , 'most fit rmse: ', fitness(dumps(population[0]), 5, 100, 'test5.txt'))
+            best = best + [f[0]]
     population, f = mysorting(population, f, 0)
-    return population
+    return population[0]
 
 def testing():
-    result = genetic(50, 5, 100, '/Users/tianyangsun/Documents/Uob_Y3_S2/02 Search and Optimisation/labs/08_Time_series_prediction/test5.txt', 100)
-    #print(result[0])
-    f = []
-    for i in result:
-        f = f + [fitness(dumps(i), 5, 100, '/Users/tianyangsun/Documents/Uob_Y3_S2/02 Search and Optimisation/labs/08_Time_series_prediction/test5.txt')]
-    mysorting(result, f, 0)
-
-    for i in range(0, 3):
-        print('depth: ', tree_depth(result[i]))
-        print(result[i])
-        print(f[i])
+    fits = []
+    for i in range(0, 10):
+        result = genetic(50, 6, 100, '/Users/tianyangsun/Documents/Uob_Y3_S2/02 Search and Optimisation/labs/08_Time_series_prediction/data', 60)
+        #print(result[0])
+        f = fitness(dumps(result), 6, 100, '/Users/tianyangsun/Documents/Uob_Y3_S2/02 Search and Optimisation/labs/08_Time_series_prediction/data')
+        fits.append(f)
+    print(fits)
 
 
 def question1(expr, n, x):
@@ -776,9 +909,71 @@ def readdata(filepath, n):
         Y_data = [row[n] for row in csv.reader(f2, delimiter='\t')]
     return X_data, Y_data
 
+def valid_address(tree):
+    if not isinstance(tree, list):
+        return [[]]
+    else:
+        if len(tree) == 2:
+            return [[]] + [[1]+x for x in valid_address(tree[1])] # + [x for x in valid_address(tree[1])]
+        if len(tree) == 3:
+            x1 = [[]]+ [[1]+x for x in valid_address(tree[1])] # + [x for x in valid_address(tree[1])]
+            x2 = [[2]+x for x in valid_address(tree[2])] # + [x for x in valid_address(tree[2])]
+            return x1 + x2
+        if len(tree) == 5:
+            return [[]]+ [[1]+x for x in valid_address(tree[1])] \
+                   + [[2]+ x for x in valid_address(tree[2])] \
+                   + [[3]+ x for x in valid_address(tree[3])] \
+                   + [[4]+ x for x in valid_address(tree[4])]
+def get_subtree(tree, route):
+    if not route:
+        return tree
+    else:
+        return get_subtree(tree[route[0]], route[1:])
+
+def cross(pop, f):
+    p1, p2 = get_parents(pop, f)
+    copy_1 = copy.deepcopy(p1)
+    copy_2 = copy.deepcopy(p2)
+
+    # mutate the parents
+    copy_1 = mutation(copy_1, 0.8)
+    copy_2 = mutation(copy_2, 0.8)
+
+    # get all possible routes for p1 and p2, select one of them and the pick one
+    routes1 = valid_address(copy_1)
+    r1 = random.choice(routes1)
+    sub1 = copy.deepcopy(get_subtree(copy_1, r1))
+    ctr = 0
+    while tree_depth(sub1) == 0 and ctr <=20:
+        r1 = random.choice(routes1)
+        sub1 = copy.deepcopy(get_subtree(copy_1, r1))
+        ctr += 1
+
+    routes2 = valid_address(copy_2)
+    r2 = random.choice(routes2)
+    sub2 = copy.deepcopy(get_subtree(copy_2, r2))
+
+    ctr = 0
+    while tree_depth(sub2) == 0 and ctr <= 20:
+        r2 = random.choice(routes2)
+        sub2 = copy.deepcopy(get_subtree(copy_2, r2))
+        ctr += 1
+
+    offspring1 = replace(copy_1, sub2, r1)
+    offspring2 = replace(copy_2, sub1, r2)
+
+    return offspring1, offspring2
 
 
 
+
+
+#t = [Symbol('add'), [Symbol('mul'), 3, 4], [Symbol('log'), [Symbol('mul'), [Symbol('mul'), 3, 4], 4]]]
+
+#print(valid_address(t))
+#print(get_subtree(t, [2, 1, 1]))
+
+#print(tree_depth(3))
 testing()
 
 
@@ -826,4 +1021,3 @@ if args.question==2:
 #test1 = "(max (sub (exp (sub (max 1.51229626953 1.71622876119) (exp -3.08529569426))) (pow (sub 0.191006438257 (sqrt -1.16461426173)) (avg 0.191006438257 (sqrt -1.10218355829)))) (ifleq (max (ifleq -0.936985333931 (sqrt 1.47757969558) -2.60300802177 (sub 3.8838508921 2.94681475796)) (sub -2.5805249348 1.34708932127)) (max (sub -2.90247306556 1.99236282422) (sub -2.54069153393 2.32701296268)) (max (sub -2.36251362023 1.24580200377) (exp (max -2.21263331848 -2.2956562051))) (mul (max -2.75120420704 3.14472767419) (sub (sqrt -1.61429976848) 2.53315506829))))"
 
 #question1(test1, )
-
